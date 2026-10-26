@@ -1,0 +1,10 @@
+[
+  {
+    "label": "Build Release",
+    "command": "cmake --build --preset release"
+  },
+  {
+    "label": "Build Debug",
+    "command": "cmake --build --preset debug"
+  }
+]
