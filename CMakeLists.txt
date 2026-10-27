@@ -63,7 +63,10 @@ target_link_libraries(imgui_rl PUBLIC raylib)
 # ==============================================================================
 
 add_executable(${PROJECT_NAME}
-  src/main.cpp)
+  src/main.cpp
+  src/core/sim_clock.cpp
+  src/core/app.cpp
+  src/core/test_sim.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
