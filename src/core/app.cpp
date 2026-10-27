@@ -1,5 +1,6 @@
 #include "core/app.hpp"
 #include "core/sim_clock.hpp"
+#include "ui/theme.hpp"
 
 #include <imgui.h>
 #include <raylib.h>
@@ -13,6 +14,7 @@ App::App(const AppConfig& config) : config(config), clock(config.clock_config) {
     InitWindow(config.window_width, config.window_height, config.window_title);
 
     rlImGuiSetup(true);
+    theme::apply_to_imgui();
     ImGui::GetIO().IniFilename = nullptr; // Disable imgui.ini
 }
 
@@ -27,7 +29,7 @@ void App::run() {
         update(GetFrameTime());
 
         BeginDrawing();
-        ClearBackground(BLACK);
+        ClearBackground(theme::bg0);
 
         render();
         draw_ui();
@@ -55,11 +57,11 @@ void App::render() {
         ? sim.get_prev_angle() + (sim.get_angle() - sim.get_prev_angle()) * clock.alpha()
         : sim.get_angle();
 
-    DrawCircleLines(static_cast<int>(cx), static_cast<int>(cy), radius, DARKGRAY);
+    DrawCircleLines(static_cast<int>(cx), static_cast<int>(cy), radius, theme::bg4);
     DrawCircle(
         static_cast<int>(cx + std::cos(angle) * radius),
         static_cast<int>(cy + std::sin(angle) * radius),
-        12.0f, WHITE
+        12.0f, theme::fg0
     );
 }
 

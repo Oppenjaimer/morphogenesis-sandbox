@@ -66,7 +66,8 @@ add_executable(${PROJECT_NAME}
   src/main.cpp
   src/core/sim_clock.cpp
   src/core/app.cpp
-  src/core/test_sim.cpp)
+  src/core/test_sim.cpp
+  src/ui/theme.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
