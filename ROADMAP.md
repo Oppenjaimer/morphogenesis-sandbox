@@ -4,9 +4,9 @@ A long-term, part-time project: one engine (C++20, raylib, Dear ImGui) that host
 
 ## Phase 0: Foundation
 
-* [ ] CMake build system setup (raylib + ImGui + rlImGui)
-* [ ] Basic application loop: window creation, fixed-timestep accumulator, UI panel (FPS, pause, step)
-* [ ] Verify Debug and Release builds
+* [x] CMake build system setup (raylib + ImGui + rlImGui)
+* [x] Basic application loop: window creation, fixed-timestep accumulator, UI panel (FPS, pause, step)
+* [x] Verify Debug and Release builds
 
 ## Phase 1: CPU Cellular Automata
 
