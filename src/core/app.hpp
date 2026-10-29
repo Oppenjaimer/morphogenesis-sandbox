@@ -28,9 +28,9 @@ private:
     void render();
     void draw_ui();
 
-    AppConfig config;
-    SimClock clock;
-    TestSim sim;
+    AppConfig m_config;
+    SimClock m_clock;
+    TestSim m_sim;
 
-    bool interpolate = true;
+    bool m_interpolate = true;
 };

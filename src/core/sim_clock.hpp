@@ -14,25 +14,29 @@ class SimClock {
 public:
     explicit SimClock(const SimClockConfig& config = {});
 
-    int advance(double frame_time); // Call once per rendered frame, returns how many sim ticks to run
-    float alpha() const;            // Fraction of the way to the next tick for render interpolation
+    // Call once per rendered frame, returns how many sim ticks to run
+    int advance(double frame_time);
+
+    // Fraction of the way to the next tick for render interpolation
+    float alpha() const;
+
     void toggle_pause();
     void request_step();
 
-    bool is_paused() const;
-    int get_hz() const;
-    std::uint64_t get_total_ticks() const;
-    const SimClockConfig& get_config() const;
+    bool paused() const;
+    int hz() const;
+    std::uint64_t total_ticks() const;
+    const SimClockConfig& config() const;
 
-    void set_hz(int new_hz);
+    void set_hz(int hz);
 
 private:
-    SimClockConfig config;
+    SimClockConfig m_config;
 
-    std::uint64_t total_ticks = 0;
-    double accumulator = 0.0;
-    int hz;
+    std::uint64_t m_total_ticks = 0;
+    double m_accumulator = 0.0;
+    int m_hz;
 
-    bool paused = false;
-    bool step_requested = false;
+    bool m_paused = false;
+    bool m_step_requested = false;
 };

@@ -1,15 +1,16 @@
 #include "core/sim_clock.hpp"
 #include <algorithm>
 
-SimClock::SimClock(const SimClockConfig& config) : config(config), hz(config.initial_hz) {
-    set_hz(hz); // Ensurevalue within config bounds
+SimClock::SimClock(const SimClockConfig& config) : m_config(config), m_hz(config.initial_hz) {
+    // Ensure value within config bounds
+    set_hz(m_hz);
 }
 
 int SimClock::advance(double frame_time) {
-    if (paused) {
-        if (step_requested) {
-            step_requested = false;
-            ++total_ticks;
+    if (m_paused) {
+        if (m_step_requested) {
+            m_step_requested = false;
+            ++m_total_ticks;
 
             return 1;
         }
@@ -18,35 +19,35 @@ int SimClock::advance(double frame_time) {
     }
 
     // Clamp large frame rates to avoid spiral of death
-    accumulator += std::min(frame_time, config.max_frame_time);
+    m_accumulator += std::min(frame_time, m_config.max_frame_time);
 
-    const double dt = 1.0 / hz;
+    const double dt = 1.0 / m_hz;
     int steps = 0;
 
-    while (accumulator >= dt && steps < config.max_steps_per_frame) {
-        accumulator -= dt;
+    while (m_accumulator >= dt && steps < m_config.max_steps_per_frame) {
+        m_accumulator -= dt;
         ++steps;
     }
 
     // Skip catching up if max number of steps per frame reached
-    if (steps == config.max_steps_per_frame) accumulator = 0.0;
+    if (steps == m_config.max_steps_per_frame) m_accumulator = 0.0;
 
-    total_ticks += static_cast<std::uint64_t>(steps);
+    m_total_ticks += static_cast<std::uint64_t>(steps);
 
     return steps;
 }
 
 float SimClock::alpha() const {
     // alpha = accumulator / dt
-    return paused ? 1.0f : static_cast<float>(accumulator * hz);
+    return m_paused ? 1.0f : static_cast<float>(m_accumulator * m_hz);
 }
 
-void SimClock::toggle_pause() { paused = !paused; }
-void SimClock::request_step() { step_requested = true; }
+void SimClock::toggle_pause() { m_paused = !m_paused; }
+void SimClock::request_step() { m_step_requested = true; }
 
-bool SimClock::is_paused() const { return paused; }
-int SimClock::get_hz() const { return hz; }
-std::uint64_t SimClock::get_total_ticks() const { return total_ticks; }
-const SimClockConfig& SimClock::get_config() const { return config; }
+bool SimClock::paused() const { return m_paused; }
+int SimClock::hz() const { return m_hz; }
+std::uint64_t SimClock::total_ticks() const { return m_total_ticks; }
+const SimClockConfig& SimClock::config() const { return m_config; }
 
-void SimClock::set_hz(int new_hz) { hz = std::clamp(new_hz, config.min_hz, config.max_hz); }
+void SimClock::set_hz(int new_hz) { m_hz = std::clamp(new_hz, m_config.min_hz, m_config.max_hz); }

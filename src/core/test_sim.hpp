@@ -4,12 +4,12 @@ class TestSim {
 public:
     void tick();
 
-    float get_angle() const;
-    float get_prev_angle() const;
+    float angle() const;
+    float prev_angle() const;
 
 private:
     static constexpr float ANGLE_PER_TICK = 0.12f;
 
-    float angle = 0.0f;
-    float prev_angle = 0.0f;
+    float m_angle = 0.0f;
+    float m_prev_angle = 0.0f;
 };
