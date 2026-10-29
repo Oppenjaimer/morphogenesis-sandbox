@@ -10,7 +10,7 @@ A long-term, part-time project: one engine (C++20, raylib, Dear ImGui) that host
 
 ## Phase 1: CPU Cellular Automata
 
-* [ ] `Grid<T>` class (flat `std::vector<T>`, width/height, `at(x, y)`)
+* [x] `Grid<T>` class (flat `std::vector<T>`, width/height, `at(x, y)`)
 * [ ] Render the grid by writing pixels to a texture (`UpdateTexture`, nearest filtering)
 * [ ] Conway's Game of Life with double buffering
 * [ ] Mouse painting and erasing, random fill, clear
