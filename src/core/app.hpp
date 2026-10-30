@@ -1,12 +1,20 @@
 #pragma once
 
 #include "core/sim_clock.hpp"
-#include "core/test_sim.hpp"
+#include "grid/grid.hpp"
+
+#include <raylib.h>
+
+#include <cstdint>
+#include <vector>
 
 struct AppConfig {
     int window_width = 1280;
     int window_height = 720;
     const char* window_title = "Morphogenesis Sandbox";
+
+    int grid_width = 200;
+    int grid_height = 112;
 
     SimClockConfig clock_config;
 };
@@ -30,7 +38,8 @@ private:
 
     AppConfig m_config;
     SimClock m_clock;
-    TestSim m_sim;
 
-    bool m_interpolate = true;
+    Grid<uint8_t> m_grid;
+    std::vector<Color> m_pixel_buffer;
+    Texture2D m_texture;
 };
