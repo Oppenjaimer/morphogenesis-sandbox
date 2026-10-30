@@ -34,4 +34,6 @@ private:
     SimClock m_clock;
     Grid<uint8_t> m_grid;
     GridRenderer m_renderer;
+
+    bool m_show_ui = true;
 };

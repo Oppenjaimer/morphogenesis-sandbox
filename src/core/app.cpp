@@ -38,6 +38,7 @@ void App::run() {
 }
 
 void App::handle_input() {
+    if (IsKeyPressed(KEY_S))     m_show_ui = !m_show_ui;
     if (IsKeyPressed(KEY_SPACE)) m_clock.toggle_pause();
     if (IsKeyPressed(KEY_ENTER)) m_clock.request_step();
 }
@@ -57,12 +58,10 @@ void App::render() {
 }
 
 void App::draw_ui() {
-    // TODO: create UI config struct
     rlImGuiBegin();
     ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
-    ImGui::Begin("Sandbox", NULL, ImGuiWindowFlags_AlwaysAutoResize);
-
-    // TODO: use S to toggle UI collapse
+    ImGui::SetNextWindowCollapsed(!m_show_ui, ImGuiCond_Always);
+    ImGui::Begin("Sandbox [S]", NULL, ImGuiWindowFlags_AlwaysAutoResize);
 
     ImGui::Text("FPS: %d", GetFPS());
     ImGui::SeparatorText("Simulation");
