@@ -13,8 +13,8 @@ struct AppConfig {
     WindowConfig window_config;
     SimClockConfig clock_config;
 
-    int grid_width = 200;
-    int grid_height = 112;
+    int grid_width = 320;
+    int grid_height = 180;
 };
 
 class App {

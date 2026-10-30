@@ -4,6 +4,7 @@
 
 #include <raylib.h>
 
+#include <cmath>
 #include <concepts>
 #include <vector>
 
@@ -51,13 +52,13 @@ public:
         // Calculate scale to fit window maintaining aspect ratio
         const float scale_x = static_cast<float>(GetScreenWidth()) / m_texture.width;
         const float scale_y = static_cast<float>(GetScreenHeight()) / m_texture.height;
-        const float scale = std::min(scale_x, scale_y);
+        const float scale = std::max(1.0f, std::floor(std::min(scale_x, scale_y)));
 
         // Center texture
         const float dest_width = m_texture.width * scale;
         const float dest_height = m_texture.height * scale;
-        const float offset_x = (GetScreenWidth() - dest_width) * 0.5f;
-        const float offset_y = (GetScreenHeight() - dest_height) * 0.5f;
+        const float offset_x = std::floor((GetScreenWidth() - dest_width) * 0.5f);
+        const float offset_y = std::floor((GetScreenHeight() - dest_height) * 0.5f);
 
         const Rectangle source = {0.0f, 0.0f, static_cast<float>(m_texture.width), static_cast<float>(m_texture.height)};
         const Rectangle dest = {offset_x, offset_y, dest_width, dest_height};
