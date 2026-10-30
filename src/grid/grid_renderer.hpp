@@ -49,6 +49,44 @@ public:
     }
 
     void render() const {
+        auto [scale, offset_x, offset_y] = compute_transform();
+
+        const float dest_width = m_texture.width * scale;
+        const float dest_height = m_texture.height * scale;
+
+        const Rectangle source = {0.0f, 0.0f, static_cast<float>(m_texture.width), static_cast<float>(m_texture.height)};
+        const Rectangle dest = {offset_x, offset_y, dest_width, dest_height};
+        const Vector2 origin = {0.0f, 0.0f};
+
+        DrawTexturePro(m_texture, source, dest, origin, 0.0f, WHITE);
+    }
+
+    // Map screen mouse coords to grid indices, returns whether mouse is within grid bounds
+    bool screen_to_grid(int mouse_x, int mouse_y, size_t& grid_x, size_t& grid_y) const {
+        auto [scale, offset_x, offset_y] = compute_transform();
+
+        const float rel_x = static_cast<float>(mouse_x) - offset_x;
+        const float rel_y = static_cast<float>(mouse_y) - offset_y;
+
+        // Reject mouse coords in empty margins
+        if (rel_x < 0 || rel_y < 0 || rel_x >= m_width * scale || rel_y >= m_height * scale)
+            return false;
+
+        grid_x = static_cast<size_t>(rel_x / scale);
+        grid_y = static_cast<size_t>(rel_y / scale);
+
+        return true;
+    }
+
+private:
+    // Texture screen scaling values
+    struct Transform {
+        float scale;
+        float offset_x;
+        float offset_y;
+    };
+
+    Transform compute_transform() const {
         // Calculate scale to fit window maintaining aspect ratio
         const float scale_x = static_cast<float>(GetScreenWidth()) / m_texture.width;
         const float scale_y = static_cast<float>(GetScreenHeight()) / m_texture.height;
@@ -60,14 +98,9 @@ public:
         const float offset_x = std::floor((GetScreenWidth() - dest_width) * 0.5f);
         const float offset_y = std::floor((GetScreenHeight() - dest_height) * 0.5f);
 
-        const Rectangle source = {0.0f, 0.0f, static_cast<float>(m_texture.width), static_cast<float>(m_texture.height)};
-        const Rectangle dest = {offset_x, offset_y, dest_width, dest_height};
-        const Vector2 origin = {0.0f, 0.0f};
-
-        DrawTexturePro(m_texture, source, dest, origin, 0.0f, WHITE);
+        return {scale, offset_x, offset_y};
     }
 
-private:
     void init_texture(size_t width, size_t height) {
         m_width = width;
         m_height = height;

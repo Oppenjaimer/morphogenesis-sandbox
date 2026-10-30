@@ -41,6 +41,20 @@ void App::handle_input() {
     if (IsKeyPressed(KEY_SPACE)) m_clock.toggle_pause();
     if (IsKeyPressed(KEY_ENTER)) m_clock.request_step();
     if (IsKeyPressed(KEY_R))     randomize_grid();
+    if (IsKeyPressed(KEY_C))     clear_grid();
+
+    // Mouse painting
+    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+        size_t grid_x = 0;
+        size_t grid_y = 0;
+
+        if (m_renderer.screen_to_grid(GetMouseX(), GetMouseY(), grid_x, grid_y)) {
+            uint8_t state = IsMouseButtonDown(MOUSE_LEFT_BUTTON) ? 1 : 0;
+
+            m_front_grid(grid_x, grid_y) = state;
+            m_back_grid(grid_x, grid_y) = state;
+        }
+    }
 }
 
 void App::update(double frame_time) {
@@ -103,6 +117,8 @@ void App::draw_ui() {
     if (ImGui::Button("Step [ENTER]")) m_clock.request_step();
     ImGui::EndDisabled();
     if (ImGui::Button("Randomize [R]")) randomize_grid();
+    ImGui::SameLine();
+    if (ImGui::Button("Clear [C]")) clear_grid();
 
     ImGui::End();
     rlImGuiEnd();
@@ -117,4 +133,9 @@ void App::randomize_grid() {
             m_front_grid(x, y) = dist(gen) ? 1 : 0;
         }
     }
+}
+
+void App::clear_grid() {
+    m_front_grid.fill(0);
+    m_back_grid.fill(0);
 }

@@ -13,8 +13,8 @@ A long-term, part-time project: one engine (C++20, raylib, Dear ImGui) that host
 * [x] `Grid<T>` class (flat `std::vector<T>`, width/height, `at(x, y)`)
 * [x] Render the grid by writing pixels to a texture (`UpdateTexture`, nearest filtering)
 * [x] Conway's Game of Life with double buffering
-* [ ] Mouse painting and erasing, random fill, clear
-* [ ] Controls: pause, single step, speed slider
+* [x] Mouse painting and erasing, random fill, clear
+* [x] Controls: pause, single step, speed slider
 * [ ] Generalize to Golly notation (B/S) and add popular presets (see [Wikipedia](https://en.wikipedia.org/wiki/Life-like_cellular_automaton))
 * [ ] RLE pattern loader (copy a few patterns from the LifeWiki into `assets/patterns/`), place by click
 * [ ] Brian's Brain (3 states) with a state-to-color palette

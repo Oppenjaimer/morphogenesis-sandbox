@@ -30,6 +30,7 @@ private:
     void draw_ui();
 
     void randomize_grid();
+    void clear_grid();
 
     AppConfig m_config;
     Window m_window;
