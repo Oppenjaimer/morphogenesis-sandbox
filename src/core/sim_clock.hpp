@@ -5,7 +5,7 @@
 struct SimClockConfig {
     double max_frame_time = 0.25;
     int max_steps_per_frame = 16;
-    int initial_hz = 30;
+    int initial_hz = 12;
     int min_hz = 1;
     int max_hz = 120;
 };

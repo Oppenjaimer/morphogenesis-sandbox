@@ -29,10 +29,13 @@ private:
     void render();
     void draw_ui();
 
+    void randomize_grid();
+
     AppConfig m_config;
     Window m_window;
     SimClock m_clock;
-    Grid<uint8_t> m_grid;
+    Grid<uint8_t> m_front_grid;
+    Grid<uint8_t> m_back_grid;
     GridRenderer m_renderer;
 
     bool m_show_ui = true;
