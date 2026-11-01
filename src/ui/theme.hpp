@@ -1,5 +1,6 @@
 #pragma once
 
+#include <imgui.h>
 #include <raylib.h>
 
 namespace theme {
@@ -37,6 +38,9 @@ namespace theme {
     inline const Color bright_aqua = {142, 192, 124, 255};
     inline const Color bright_orange = {254, 128, 25, 255};
     inline const Color bright_gray = {168, 153, 132, 255};
+
+    // Convert Color (0-255) to ImVec4 (0.0f-1.0f)
+    ImVec4 to_imvec(const Color& c, float alpha = 1.0f);
 
     void apply_to_imgui();
 }

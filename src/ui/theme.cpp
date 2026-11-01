@@ -2,11 +2,8 @@
 
 #include <imgui.h>
 
-namespace {
-    // Convert Color (0-255) to ImVec4 (0.0f-1.0f).
-    ImVec4 to_imvec(const Color& c) {
-        return ImVec4(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f);
-    }
+ImVec4 theme::to_imvec(const Color& c, float alpha) {
+    return ImVec4(c.r / 255.0f, c.g / 255.0f, c.b / 255.0f, c.a / 255.0f * alpha);
 }
 
 void theme::apply_to_imgui() {
