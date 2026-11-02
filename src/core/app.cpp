@@ -38,6 +38,8 @@ void App::run() {
 }
 
 void App::handle_input() {
+    ImGuiIO& io = ImGui::GetIO();
+
     if (IsKeyPressed(KEY_S)) m_show_ui = !m_show_ui;
     if (IsKeyPressed(KEY_SPACE)) m_clock.toggle_pause();
     if (IsKeyPressed(KEY_ENTER) || IsKeyPressedRepeat(KEY_ENTER)) m_clock.request_step();
@@ -45,7 +47,7 @@ void App::handle_input() {
     if (IsKeyPressed(KEY_C)) clear_grid();
 
     // Mouse painting
-    if (IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+    if (!io.WantCaptureMouse && (IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_RIGHT_BUTTON))) {
         size_t grid_x = 0;
         size_t grid_y = 0;
 
