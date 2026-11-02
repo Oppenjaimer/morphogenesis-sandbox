@@ -28,7 +28,7 @@ A long-term, part-time project: one engine (C++20, raylib, Dear ImGui) that host
 
 ## Phase 2: Architecture Abstraction
 
-* [ ] Define `Scenario` interface (`init`, `update`, `render`, `drawUI`, `shutdown`)
+* [x] Define `Scenario` interface (`handle_input`, `tick`, `render`, `draw_ui`)
 * [ ] Scenario registry and UI combo-box switcher
 * [ ] Refactor Phase 1 systems into isolated scenarios
 * [ ] Shared camera and infrastructure

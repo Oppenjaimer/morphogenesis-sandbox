@@ -23,10 +23,8 @@ struct Rule {
             else if (c == '/') parsing_birth = false;
             else if (c >= '0' && c <= '8') {
                 int neighbors = c - '0';
-                if (neighbors <= 8) {
-                    if (parsing_birth) rule.birth |= (1 << neighbors);
-                    else rule.survival |= (1 << neighbors);
-                }
+                if (parsing_birth) rule.birth |= (1 << neighbors);
+                else rule.survival |= (1 << neighbors);
             }
         }
 
@@ -43,4 +41,16 @@ namespace presets {
     inline constexpr Rule day_and_night      = Rule::from_golly("B3678/S34678");
     inline constexpr Rule maze               = Rule::from_golly("B3/S12345");
     inline constexpr Rule anneal             = Rule::from_golly("B4678/S35678");
-};
+
+    struct Preset {
+        const char* name;
+        Rule rule;
+    };
+
+    inline constexpr Preset presets_arr[] = {
+        {"Game of Life", game_of_life}, {"Replicator", replicator},
+        {"Seeds", seeds}, {"Life without Death", life_without_death},
+        {"HighLife", high_life}, {"Day and Night", day_and_night},
+        {"Maze", maze}, {"Anneal", anneal}
+    };
+}

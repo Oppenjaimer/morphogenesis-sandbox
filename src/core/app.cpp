@@ -1,25 +1,19 @@
 #include "core/app.hpp"
+#include "core/scenario.hpp"
 #include "core/sim_clock.hpp"
-#include "scenarios/life_like/rule.hpp"
+#include "scenarios/life_like/scenario.hpp"
 #include "ui/theme.hpp"
 
 #include <imgui.h>
 #include <raylib.h>
 #include <rlImGui.h>
 
-#include <cstdint>
-#include <random>
-#include <utility>
-
 App::App(const AppConfig& config)
     : m_config(config),
       m_window(config.window_config),
-      m_clock(config.clock_config),
-      m_front_grid(config.grid_width, config.grid_height),
-      m_back_grid(config.grid_width, config.grid_height),
-      m_renderer(config.grid_width, config.grid_height)
+      m_clock(config.clock_config)
 {
-    randomize_grid();
+    m_scenario = std::make_unique<LifeLikeScenario>();
 }
 
 void App::run() {
@@ -38,57 +32,25 @@ void App::run() {
 }
 
 void App::handle_input() {
-    ImGuiIO& io = ImGui::GetIO();
-
-    if (IsKeyPressed(KEY_S)) m_show_ui = !m_show_ui;
-    if (IsKeyPressed(KEY_SPACE)) m_clock.toggle_pause();
-    if (IsKeyPressed(KEY_ENTER) || IsKeyPressedRepeat(KEY_ENTER)) m_clock.request_step();
-    if (IsKeyPressed(KEY_R))  randomize_grid();
-    if (IsKeyPressed(KEY_C)) clear_grid();
-
-    // Mouse painting
-    if (!io.WantCaptureMouse && (IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_RIGHT_BUTTON))) {
-        size_t grid_x = 0;
-        size_t grid_y = 0;
-
-        if (m_renderer.screen_to_grid(GetMouseX(), GetMouseY(), grid_x, grid_y)) {
-            uint8_t state = IsMouseButtonDown(MOUSE_LEFT_BUTTON) ? 1 : 0;
-
-            m_front_grid(grid_x, grid_y) = state;
-            m_back_grid(grid_x, grid_y) = state;
-        }
+    if (!ImGui::GetIO().WantTextInput) {
+        if (IsKeyPressed(KEY_S)) m_show_ui = !m_show_ui;
+        if (IsKeyPressed(KEY_SPACE)) m_clock.toggle_pause();
+        if (IsKeyPressed(KEY_ENTER) || IsKeyPressedRepeat(KEY_ENTER)) m_clock.request_step();
     }
+
+    m_scenario->handle_input();
 }
 
 void App::update(double frame_time) {
     const int steps = m_clock.advance(frame_time);
 
-    for (int i = 0; i < steps; ++i) {
-        for (size_t y = 0; y < m_front_grid.height(); ++y) {
-            for (size_t x = 0; x < m_front_grid.width(); ++x) {
-                int alive_neighbors = 0;
-
-                for (int j = -1; j <= 1; ++j) {
-                    for (int i = -1; i <= 1; ++i) {
-                        if (i == 0 && j == 0) continue;
-                        alive_neighbors += m_front_grid.at(static_cast<int>(x) + i, static_cast<int>(y) + j);
-                    }
-                }
-
-                m_back_grid(x, y) = m_front_grid(x, y)
-                    ? m_rule.can_survive(alive_neighbors)
-                    : m_rule.can_birth(alive_neighbors);
-            }
-        }
-
-        std::swap(m_front_grid, m_back_grid);
+    for (int step = 0; step < steps; ++step) {
+        m_scenario->tick();
     }
-
-    m_renderer.update(m_front_grid, [](uint8_t cell) { return cell ? theme::fg0 : theme::bg0; });
 }
 
 void App::render() {
-    m_renderer.render();
+    m_scenario->render();
 }
 
 void App::draw_ui() {
@@ -116,100 +78,9 @@ void App::draw_ui() {
     ImGui::BeginDisabled(!m_clock.paused());
     if (ImGui::Button("Step [ENTER]")) m_clock.request_step();
     ImGui::EndDisabled();
-    if (ImGui::Button("Randomize [R]")) randomize_grid();
-    ImGui::SameLine();
-    if (ImGui::Button("Clear [C]")) clear_grid();
 
-    ImGui::SeparatorText("Rules");
-
-    const Rule preset_rules[] = {
-        presets::game_of_life, presets::replicator, presets::seeds,
-        presets::life_without_death, presets::high_life, presets::day_and_night,
-        presets::maze, presets::anneal, m_rule // Dummy for "Custom"
-    };
-
-    const char* preset_names[] = {
-        "Game of Life", "Replicator", "Seeds", "Life without Death",
-        "HighLife", "Day and Night", "Maze", "Anneal", "Custom"
-    };
-
-    ImGui::AlignTextToFramePadding();
-    ImGui::Text("Preset"); ImGui::SameLine();
-    if (ImGui::Combo("##preset", &m_preset_idx, preset_names, IM_ARRAYSIZE(preset_names))) {
-        if (m_preset_idx < IM_ARRAYSIZE(preset_names) - 1)
-            m_rule = preset_rules[m_preset_idx];
-    }
-
-    ImGui::Spacing();
-
-    bool rule_changed = false;
-    rule_changed |= draw_toggle_row("B:", m_rule.birth);
-    rule_changed |= draw_toggle_row("S:", m_rule.survival);
-
-    if (rule_changed) {
-        m_preset_idx = IM_ARRAYSIZE(preset_names) - 1;
-
-        // Auto-detect if manual bits match a known preset
-        for (int i = 0; i < IM_ARRAYSIZE(preset_names) - 1; ++i) {
-            if (m_rule == preset_rules[i]) {
-                m_preset_idx = i;
-                break;
-            }
-        }
-    }
+    m_scenario->draw_ui();
 
     ImGui::End();
     rlImGuiEnd();
-}
-
-void App::randomize_grid() {
-    std::mt19937 gen(std::random_device{}());
-    std::bernoulli_distribution dist(0.2); // 20% chance for a cell to be alive
-
-    for (size_t y = 0; y < m_front_grid.height(); ++y) {
-        for (size_t x = 0; x < m_front_grid.width(); ++x) {
-            m_front_grid(x, y) = dist(gen) ? 1 : 0;
-        }
-    }
-}
-
-void App::clear_grid() {
-    m_front_grid.fill(0);
-    m_back_grid.fill(0);
-}
-
-bool App::draw_toggle_row(const char* label, uint16_t& mask) {
-    ImGui::AlignTextToFramePadding();
-    ImGui::Text("%s", label);
-
-    bool changed = false;
-
-    for (int i = 0; i <= 8; ++i) {
-        ImGui::SameLine();
-        bool is_set = mask & (1 << i);
-
-        if (is_set) {
-            ImGui::PushStyleColor(ImGuiCol_Button, theme::to_imvec(theme::bright_blue));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, theme::to_imvec(theme::blue));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, theme::to_imvec(theme::blue));
-            ImGui::PushStyleColor(ImGuiCol_Text, theme::to_imvec(theme::bg0_hard));
-        } else {
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, theme::to_imvec(theme::fg1, 0.1f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, theme::to_imvec(theme::fg1, 0.2f));
-        }
-
-        char id[16];
-        snprintf(id, sizeof(id), "%d##%s", i, label);
-
-        if (ImGui::Button(id, ImVec2(22, 22))) {
-            mask ^= (1 << i);
-            changed = true;
-        }
-
-        if (is_set) ImGui::PopStyleColor(4);
-        else ImGui::PopStyleColor(3);
-    }
-
-    return changed;
 }
