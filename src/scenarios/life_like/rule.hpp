@@ -1,16 +1,28 @@
 #pragma once
 
 #include <cstdint>
-#include <string_view>
+#include <string>
 
 struct Rule {
     uint16_t birth = 0;
     uint16_t survival = 0;
 
     constexpr bool operator==(const Rule&) const = default;
+    constexpr bool operator!=(const Rule&) const = default;
 
     constexpr bool can_birth(int neighbors) const { return birth & (1 << neighbors); }
     constexpr bool can_survive(int neighbors) const { return survival & (1 << neighbors); }
+
+    // Express rule in Golly (B/S) notation
+    constexpr std::string to_golly() const {
+        std::string out = "B";
+
+        for (int i = 0; i <= 8; ++i) if (can_birth(i)) out += std::to_string(i);
+        out += "/S";
+        for (int i = 0; i <= 8; ++i) if (can_survive(i)) out += std::to_string(i);
+
+        return out;
+    }
 
     // Parse rule string using Golly (B/S) notation, like "B3/S23"
     static constexpr Rule from_golly(std::string_view str) {

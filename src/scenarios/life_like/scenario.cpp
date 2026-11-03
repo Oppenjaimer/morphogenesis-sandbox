@@ -3,8 +3,15 @@
 #include "ui/theme.hpp"
 
 #include <imgui.h>
+#include <raylib.h>
 
+#include <cstdint>
 #include <random>
+#include <string>
+
+namespace {
+    const char* patterns_dir = "assets/patterns/";
+}
 
 LifeLikeScenario::LifeLikeScenario(const LifeLikeConfig& config)
     : m_config(config),
@@ -24,17 +31,16 @@ void LifeLikeScenario::handle_input() {
         if (IsKeyPressed(KEY_C)) clear_grid();
     }
 
-    // Mouse painting
-    if (!io.WantCaptureMouse && (IsMouseButtonDown(MOUSE_LEFT_BUTTON) || IsMouseButtonDown(MOUSE_RIGHT_BUTTON))) {
-        size_t grid_x = 0;
-        size_t grid_y = 0;
+    if (IsMouseButtonReleased(MOUSE_LEFT_BUTTON) || IsMouseButtonReleased(MOUSE_RIGHT_BUTTON))
+        m_pattern_lock = false;
 
-        if (m_renderer.screen_to_grid(GetMouseX(), GetMouseY(), grid_x, grid_y)) {
-            uint8_t state = IsMouseButtonDown(MOUSE_LEFT_BUTTON) ? 1 : 0;
+    if (!io.WantCaptureMouse) {
+        size_t gx = 0;
+        size_t gy = 0;
 
-            m_front_grid(grid_x, grid_y) = state;
-            m_back_grid(grid_x, grid_y) = state;
-            m_dirty = true;
+        if (m_renderer.screen_to_grid(GetMouseX(), GetMouseY(), gx, gy)) {
+            if (m_active_pattern.has_value()) placement_mode(gx, gy);
+            else if (!m_pattern_lock) painting_mode(gx, gy);
         }
     }
 }
@@ -68,24 +74,95 @@ void LifeLikeScenario::render() {
     }
 
     m_renderer.render();
+    draw_pattern_overlay();
 }
 
 void LifeLikeScenario::draw_ui() {
+    // Controls
     if (ImGui::Button("Randomize [R]")) randomize_grid();
     ImGui::SameLine();
     if (ImGui::Button("Clear [C]")) clear_grid();
 
-    ImGui::SeparatorText("Rules");
+    ImGui::SeparatorText("Rules & Patterns");
 
-    if (ImGui::Button("Load Preset")) {
-        ImGui::OpenPopup("preset_popup");
+    // Popup triggers
+    if (ImGui::Button("Load Preset")) ImGui::OpenPopup("preset_popup");
+    ImGui::SameLine();
+    if (ImGui::Button("Place Pattern")) {
+        m_pattern_library.fetch(patterns_dir);
+        ImGui::OpenPopup("pattern_popup");
     }
 
+    // Cancel placement button
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!m_active_pattern.has_value());
+    if (ImGui::Button("Cancel Placement")) m_active_pattern.reset();
+    ImGui::EndDisabled();
+
+    // Preset switching popup
     if (ImGui::BeginPopup("preset_popup")) {
         for (const auto& preset : presets::presets_arr) {
             if (ImGui::Selectable(preset.name)) {
                 m_rule = preset.rule;
                 m_dirty = true;
+            }
+
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("%s", preset.rule.to_golly().c_str());
+        }
+
+        ImGui::EndPopup();
+    }
+
+    // Pattern placement popup
+    if (ImGui::BeginPopup("pattern_popup")) {
+        if (!m_pattern_library.error().empty()) {
+            ImGui::TextDisabled("%s", m_pattern_library.error().c_str());
+        } else if (m_pattern_library.entries().empty()) {
+            ImGui::TextDisabled("No RLE files found in %s", patterns_dir);
+        } else {
+            for (const auto& entry : m_pattern_library.entries()) {
+                if (!entry.error.empty()) {
+                    ImGui::TextDisabled("%s (error)", entry.filename.c_str());
+                    if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", entry.error.c_str());
+                } else {
+                    // Check rules mismatch
+                    bool rule_mismatch = false;
+                    if (entry.pattern.has_value() && !entry.pattern->rule.empty()) {
+                        Rule pattern_rule = Rule::from_golly(entry.pattern->rule);
+                        if (pattern_rule != m_rule) rule_mismatch = true;
+                    }
+
+                    if (rule_mismatch)
+                        ImGui::PushStyleColor(ImGuiCol_Text, theme::to_imvec(theme::bright_yellow));
+
+                    if (ImGui::Selectable(entry.filename.c_str()))
+                        m_active_pattern = entry.pattern;
+
+                    if (rule_mismatch) ImGui::PopStyleColor();
+
+                    if (ImGui::IsItemHovered() && entry.pattern.has_value()) {
+                        ImGui::BeginTooltip();
+
+                        if (!entry.pattern->name.empty())
+                            ImGui::Text("%s", entry.pattern->name.c_str());
+
+                        if (rule_mismatch) {
+                            if (!entry.pattern->name.empty()) ImGui::Separator();
+                            ImGui::TextColored(
+                                theme::to_imvec(theme::bright_yellow),
+                                "Pattern uses rule %s", entry.pattern->rule.c_str()
+                            );
+                        }
+
+                        if (!entry.pattern->description.empty()) {
+                            if (!entry.pattern->name.empty()) ImGui::Separator();
+                            ImGui::TextDisabled("%s", entry.pattern->description.c_str());
+                        }
+
+                        ImGui::EndTooltip();
+                    }
+                }
             }
         }
 
@@ -94,6 +171,7 @@ void LifeLikeScenario::draw_ui() {
 
     ImGui::Spacing();
 
+    // Rule toggles
     draw_toggle_row("B:", m_rule.birth);
     draw_toggle_row("S:", m_rule.survival);
 }
@@ -143,4 +221,60 @@ void LifeLikeScenario::draw_toggle_row(const char* label, uint16_t& mask) {
         if (is_set) ImGui::PopStyleColor(4);
         else ImGui::PopStyleColor(3);
     }
+}
+
+void LifeLikeScenario::draw_pattern_overlay() {
+    if (!m_active_pattern.has_value() || ImGui::GetIO().WantCaptureMouse) return;
+
+    size_t gx = 0;
+    size_t gy = 0;
+
+    if (!m_renderer.screen_to_grid(GetMouseX(), GetMouseY(), gx, gy)) return;
+
+    Color color = theme::fg0;
+    color.a = 128;
+
+    for (int py = 0; py < m_active_pattern->height(); ++py) {
+        for (int px = 0; px < m_active_pattern->width(); ++px) {
+            if (m_active_pattern->alive(px, py)) {
+                if (gx + px < m_front_grid.width() && gy + py < m_front_grid.height()) {
+                    DrawRectangleRec(m_renderer.cell_rect(gx + px, gy + py), color);
+                }
+            }
+        }
+    }
+}
+
+void LifeLikeScenario::placement_mode(size_t gx, size_t gy) {
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        // Place pattern
+        for (int py = 0; py < m_active_pattern->height(); ++py) {
+            for (int px = 0; px < m_active_pattern->width(); ++px) {
+                if (!m_active_pattern->alive(px, py)) continue;
+
+                size_t tx = gx + px;
+                size_t ty = gy + py;
+
+                if (tx >= m_front_grid.width() || ty >= m_front_grid.height()) continue;
+
+                m_front_grid(tx, ty) = 1;
+                m_back_grid(tx, ty) = 1;
+            }
+        }
+
+        m_dirty = true;
+    } else if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) {
+        // Exit placement mode
+        m_active_pattern.reset();
+        m_pattern_lock = true; // Prevent fallthrough erase
+    }
+}
+
+void LifeLikeScenario::painting_mode(size_t gx, size_t gy) {
+    if (!IsMouseButtonDown(MOUSE_LEFT_BUTTON) && !IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) return;
+
+    uint8_t state = IsMouseButtonDown(MOUSE_BUTTON_LEFT) ? 1 : 0;
+    m_front_grid(gx, gy) = state;
+    m_back_grid(gx, gy) = state;
+    m_dirty = true;
 }

@@ -67,7 +67,9 @@ add_executable(${PROJECT_NAME}
   src/core/sim_clock.cpp
   src/core/app.cpp
   src/ui/theme.cpp
-  src/scenarios/life_like/scenario.cpp)
+  src/scenarios/life_like/scenario.cpp
+  src/scenarios/life_like/rle.cpp
+  src/scenarios/life_like/pattern_library.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 

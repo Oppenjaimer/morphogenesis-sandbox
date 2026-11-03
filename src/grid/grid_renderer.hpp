@@ -78,6 +78,18 @@ public:
         return true;
     }
 
+    // Get bounding box of a single cell
+    Rectangle cell_rect(size_t grid_x, size_t grid_y) const {
+        auto [scale, offset_x, offset_y] = compute_transform();
+
+        return {
+            static_cast<float>(offset_x + grid_x * scale),
+            static_cast<float>(offset_y + grid_y * scale),
+            static_cast<float>(scale),
+            static_cast<float>(scale)
+        };
+    }
+
 private:
     // Texture screen scaling values
     struct Transform {

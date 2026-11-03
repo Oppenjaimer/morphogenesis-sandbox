@@ -1,0 +1,4 @@
+#N Lightweight spaceship
+#C Period 4. Moves 2 cells sideways every 4 generations (c/2).
+x = 5, y = 4, rule = B3/S23
+bo2bo$o$o3bo$4o!

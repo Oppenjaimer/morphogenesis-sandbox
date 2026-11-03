@@ -16,7 +16,7 @@ A long-term, part-time project: one engine (C++20, raylib, Dear ImGui) that host
 * [x] Mouse painting and erasing, random fill, clear
 * [x] Controls: pause, single step, speed slider
 * [x] Generalize to Golly notation (B/S) and add popular presets (see [Wikipedia](https://en.wikipedia.org/wiki/Life-like_cellular_automaton))
-* [ ] RLE pattern loader (copy a few patterns from the LifeWiki into `assets/patterns/`), place by click
+* [x] RLE pattern loader (copy a few patterns from the LifeWiki into `assets/patterns/`), place by click
 * [ ] Brian's Brain (3 states) with a state-to-color palette
 * [ ] Langton's Ant and a generalized multi-color version
 * [ ] Wireworld
