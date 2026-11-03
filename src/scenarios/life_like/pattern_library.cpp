@@ -2,6 +2,7 @@
 #include "scenarios/life_like/rle.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -12,7 +13,7 @@ namespace {
     constexpr std::uintmax_t max_file_bytes = 1u << 20; // 1 MiB
 
     std::string lowercase(std::string str) {
-        std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+        std::transform(str.begin(), str.end(), str.begin(), [](unsigned char c){ return std::tolower(c); });
         return str;
     }
 
@@ -62,13 +63,12 @@ void PatternLibrary::fetch(const std::filesystem::path& directory) {
     }
 
     const std::filesystem::directory_iterator end;
-    while (it != end) {
+    for (; it != end; it.increment(ec)) {
         std::error_code file_ec;
         if (!it->is_regular_file(file_ec)) continue;
         if (lowercase(it->path().extension().string()) != ".rle") continue;
 
         m_entries.push_back(load_entry(it->path()));
-        it.increment(ec);
     }
 
     if (ec) m_error = "Error while listing " + directory.string() + ": " + ec.message();

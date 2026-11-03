@@ -14,7 +14,7 @@ struct Rule {
     constexpr bool can_survive(int neighbors) const { return survival & (1 << neighbors); }
 
     // Express rule in Golly (B/S) notation
-    constexpr std::string to_golly() const {
+    std::string to_golly() const {
         std::string out = "B";
 
         for (int i = 0; i <= 8; ++i) if (can_birth(i)) out += std::to_string(i);

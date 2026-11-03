@@ -6,11 +6,12 @@
 #include <raylib.h>
 
 #include <cstdint>
+#include <filesystem>
 #include <random>
 #include <string>
 
 namespace {
-    const char* patterns_dir = "assets/patterns/";
+    const std::filesystem::path patterns_dir = std::filesystem::path(ASSETS_DIR) / "patterns";
 }
 
 LifeLikeScenario::LifeLikeScenario(const LifeLikeConfig& config)
@@ -119,7 +120,7 @@ void LifeLikeScenario::draw_ui() {
         if (!m_pattern_library.error().empty()) {
             ImGui::TextDisabled("%s", m_pattern_library.error().c_str());
         } else if (m_pattern_library.entries().empty()) {
-            ImGui::TextDisabled("No RLE files found in %s", patterns_dir);
+            ImGui::TextDisabled("No RLE files found in %s", patterns_dir.c_str());
         } else {
             for (const auto& entry : m_pattern_library.entries()) {
                 if (!entry.error.empty()) {

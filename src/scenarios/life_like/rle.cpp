@@ -12,12 +12,12 @@
 #include <system_error>
 
 namespace {
-    constexpr int max_dimension = 4096; // Limit on header's x and y
-    constexpr int max_run = 1000;       // Longest run count
+    constexpr int max_dimension = 4096;    // Limit on header's x and y
+    constexpr int max_run = max_dimension; // Longest run count
 
     std::string_view trim(std::string_view str) {
-        while (!str.empty() && std::isspace(str.front())) str.remove_prefix(1);
-        while (!str.empty() && std::isspace(str.back())) str.remove_suffix(1);
+        while (!str.empty() && std::isspace(static_cast<unsigned char>(str.front()))) str.remove_prefix(1);
+        while (!str.empty() && std::isspace(static_cast<unsigned char>(str.back()))) str.remove_suffix(1);
 
         return str;
     }
@@ -31,7 +31,7 @@ namespace {
     std::string parse_header(std::string_view line, int& width, int& height, std::string& rule) {
         std::string compact;
         for (const char c : line) {
-            if (!std::isspace(c)) compact += c;
+            if (!std::isspace(static_cast<unsigned char>(c))) compact += c;
         }
 
         bool has_x = false;
@@ -48,7 +48,7 @@ namespace {
                 return "Invalid header field '" + std::string(field) + "'";
 
             std::string key(field.substr(0, equals));
-            std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+            std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c){ return std::tolower(c); });
             const std::string_view value = field.substr(equals + 1);
 
             if (key == "x") {
@@ -82,7 +82,7 @@ namespace {
     std::string decode_line(std::string_view line, Pattern& pattern, BodyState& state) {
         for (const char c : line) {
             if (state.done) break; // '!' reached
-            if (std::isspace(c)) continue;
+            if (std::isspace(static_cast<unsigned char>(c))) continue;
 
             if (c >= '0' && c <= '9') {
                 state.run = state.run * 10 + (c - '0');
