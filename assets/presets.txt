@@ -1,0 +1,8 @@
+Game of Life=B3/S23
+Replicator=B1357/S1357
+Seeds=B2/S
+Life without Death=B3/S012345678
+HighLife=B36/S23
+Day and Night=B3678/S34678
+Maze=B3/S12345
+Anneal=B4678/S35678

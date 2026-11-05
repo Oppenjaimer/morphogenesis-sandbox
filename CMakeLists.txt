@@ -69,7 +69,8 @@ add_executable(${PROJECT_NAME}
   src/ui/theme.cpp
   src/scenarios/life_like/scenario.cpp
   src/scenarios/life_like/rle.cpp
-  src/scenarios/life_like/pattern_library.cpp)
+  src/scenarios/life_like/pattern_library.cpp
+  src/scenarios/life_like/rule.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 

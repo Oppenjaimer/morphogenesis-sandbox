@@ -12,6 +12,7 @@
 
 namespace {
     const std::filesystem::path patterns_dir = std::filesystem::path(ASSETS_DIR) / "patterns";
+    const std::filesystem::path presets_file = std::filesystem::path(ASSETS_DIR) / "presets.txt";
 }
 
 LifeLikeScenario::LifeLikeScenario(const LifeLikeConfig& config)
@@ -21,6 +22,9 @@ LifeLikeScenario::LifeLikeScenario(const LifeLikeConfig& config)
       m_renderer(config.grid_width, config.grid_height),
       m_rng(std::random_device{}())
 {
+    // Default to Game of Life
+    m_rule = Rule::from_golly("B3/S23");
+
     randomize_grid();
 }
 
@@ -86,9 +90,15 @@ void LifeLikeScenario::draw_ui() {
 
     ImGui::SeparatorText("Rules & Patterns");
 
-    // Popup triggers
-    if (ImGui::Button("Load Preset")) ImGui::OpenPopup("preset_popup");
+    // Preset trigger button
+    if (ImGui::Button("Load Preset")) {
+        m_presets = presets::load(presets_file);
+        ImGui::OpenPopup("preset_popup");
+    }
+
     ImGui::SameLine();
+
+    // Pattern trigger button
     if (ImGui::Button("Place Pattern")) {
         m_pattern_library.fetch(patterns_dir);
         ImGui::OpenPopup("pattern_popup");
@@ -102,14 +112,18 @@ void LifeLikeScenario::draw_ui() {
 
     // Preset switching popup
     if (ImGui::BeginPopup("preset_popup")) {
-        for (const auto& preset : presets::presets_arr) {
-            if (ImGui::Selectable(preset.name)) {
-                m_rule = preset.rule;
-                m_dirty = true;
-            }
+        if (m_presets.empty()) {
+            ImGui::TextDisabled("No presets found in %s", presets_file.c_str());
+        } else {
+            for (const auto& preset : m_presets) {
+                if (ImGui::Selectable(preset.name.c_str())) {
+                    m_rule = preset.rule;
+                    m_dirty = true;
+                }
 
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("%s", preset.rule.to_golly().c_str());
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip("%s", preset.rule.to_golly().c_str());
+            }
         }
 
         ImGui::EndPopup();

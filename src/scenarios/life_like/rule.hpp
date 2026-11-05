@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
+#include <vector>
 
 struct Rule {
     uint16_t birth = 0;
@@ -44,25 +46,12 @@ struct Rule {
     }
 };
 
+struct Preset {
+    std::string name;
+    Rule rule;
+};
+
 namespace presets {
-    inline constexpr Rule game_of_life       = Rule::from_golly("B3/S23");
-    inline constexpr Rule replicator         = Rule::from_golly("B1357/S1357");
-    inline constexpr Rule seeds              = Rule::from_golly("B2/S");
-    inline constexpr Rule life_without_death = Rule::from_golly("B3/S012345678");
-    inline constexpr Rule high_life          = Rule::from_golly("B36/S23");
-    inline constexpr Rule day_and_night      = Rule::from_golly("B3678/S34678");
-    inline constexpr Rule maze               = Rule::from_golly("B3/S12345");
-    inline constexpr Rule anneal             = Rule::from_golly("B4678/S35678");
-
-    struct Preset {
-        const char* name;
-        Rule rule;
-    };
-
-    inline constexpr Preset presets_arr[] = {
-        {"Game of Life", game_of_life}, {"Replicator", replicator},
-        {"Seeds", seeds}, {"Life without Death", life_without_death},
-        {"HighLife", high_life}, {"Day and Night", day_and_night},
-        {"Maze", maze}, {"Anneal", anneal}
-    };
+    // Barebones preset loader, the current format is just temporary
+    std::vector<Preset> load(const std::filesystem::path& file);
 }

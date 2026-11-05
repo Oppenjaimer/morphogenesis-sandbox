@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <optional>
 #include <random>
+#include <vector>
 
 struct LifeLikeConfig {
     int grid_width = 320;
@@ -38,7 +39,9 @@ private:
     Grid<uint8_t> m_front_grid;
     Grid<uint8_t> m_back_grid;
     GridRenderer m_renderer;
-    Rule m_rule = presets::game_of_life;
+
+    Rule m_rule;
+    std::vector<Preset> m_presets;
 
     std::mt19937 m_rng;
     bool m_dirty = true; // Flag for grid GPU upload when modified only
