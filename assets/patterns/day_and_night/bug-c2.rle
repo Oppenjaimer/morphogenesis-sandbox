@@ -1,0 +1,4 @@
+#N Bug
+#C A c/2 period-2 spaceship; found by Apple Bottom. From LifeWiki (conwaylife.com).
+x = 7, y = 9, rule = B3678/S34678
+3bo$2b3o$b5o$2b3o$7o$7o$ob3obo$3bo$2bobo!

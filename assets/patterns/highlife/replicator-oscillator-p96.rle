@@ -1,0 +1,4 @@
+#N Period-96 replicator oscillator
+#C A period-96 oscillator built from replicators (period verified by simulation). From LifeWiki (conwaylife.com).
+x = 35, y = 19, rule = B36/S23
+2o$2o10bo$11b2o$10bobo$9b3o$$15b3o$14bobo$14b2o$14bo$7$33b2o$33b2o!

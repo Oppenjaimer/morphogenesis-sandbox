@@ -1,0 +1,4 @@
+#N Period-5 oscillator
+#C Found by Keith Amling, August 2023. From LifeWiki (conwaylife.com).
+x = 34, y = 34, rule = B2/S
+10bob2o6b2obo$9bo3bo6bo3bo$8bo6bo2bo6bo$6bob2o14b2obo$7b3o5bo2bo5b3o$5bo4bo12bo4bo$3bo5bob2obo4bob2obo5bo$4bo6b3o6b3o6bo$2b3o6bo10bo6b3o$bob2obo5bo8bo5bob2obo$o4bo4bo12bo4bo4bo$6b3o16b3o$o5b2obo14bob2o5bo$2o5bo18bo5b2o$6bo20bo$2bobo24bobo$2$2bobo24bobo$6bo20bo$2o5bo18bo5b2o$o5b2obo14bob2o5bo$6b3o16b3o$o4bo4bo12bo4bo4bo$bob2obo5bo8bo5bob2obo$2b3o6bo10bo6b3o$4bo6b3o6b3o6bo$3bo5bob2obo4bob2obo5bo$5bo4bo12bo4bo$7b3o5bo2bo5b3o$6bob2o14b2obo$8bo6bo2bo6bo$9bo3bo6bo3bo$10bob2o6b2obo!

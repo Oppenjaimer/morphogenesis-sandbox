@@ -1,0 +1,4 @@
+#N T-tetromino
+#C Four cells growing into a maze.
+x = 3, y = 2, rule = B3/S12345
+3o$bo!

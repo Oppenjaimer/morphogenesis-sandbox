@@ -1,0 +1,4 @@
+#N Block
+#C A 2x2 block detonates into a spreading pattern that wraps the default grid and settles at roughly 12k cells by gen 300.
+x = 2, y = 2, rule = B2/S
+2o$2o!

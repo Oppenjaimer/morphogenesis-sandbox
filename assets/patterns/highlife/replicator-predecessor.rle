@@ -1,0 +1,4 @@
+#N Replicator predecessor
+#C Six cells that turn into the replicator. From LifeWiki (conwaylife.com).
+x = 4, y = 4, rule = B36/S23
+b3o$o$o$o!

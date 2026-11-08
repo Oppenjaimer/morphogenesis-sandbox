@@ -1,0 +1,4 @@
+#N Duoplet
+#C Two diagonal cells, a period-2 oscillator. The smallest thing in Seeds that survives. From LifeWiki (conwaylife.com).
+x = 2, y = 2, rule = B2/S
+o$bo!

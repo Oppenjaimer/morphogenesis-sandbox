@@ -1,0 +1,4 @@
+#N Glider as a seed
+#C Grows into a maze.
+x = 3, y = 3, rule = B3/S12345
+bo$2bo$3o!

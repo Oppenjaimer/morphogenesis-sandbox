@@ -1,0 +1,4 @@
+#N Nine-cell seed
+#C Explodes like the block does.
+x = 5, y = 2, rule = B2/S
+2ob2o$5o!

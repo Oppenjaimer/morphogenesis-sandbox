@@ -1,0 +1,4 @@
+#N Three in a row
+#C Grows into a small stable 29-cell snowflake and stops.
+x = 3, y = 1, rule = B3/S012345678
+3o!

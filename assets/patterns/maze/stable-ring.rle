@@ -1,0 +1,4 @@
+#N Ring
+#C Eight cells turn into a stable 24-cell shape.
+x = 3, y = 3, rule = B3/S12345
+3o$obo$3o!

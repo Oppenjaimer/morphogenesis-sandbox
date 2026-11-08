@@ -1,0 +1,4 @@
+#N Glider as a seed
+#C Leaves a growing trail since cells never die.
+x = 3, y = 3, rule = B3/S012345678
+bo$2bo$3o!

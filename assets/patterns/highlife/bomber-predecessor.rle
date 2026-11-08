@@ -1,0 +1,4 @@
+#N Bomber predecessor
+#C Nine cells that turn into the bomber. From LifeWiki (conwaylife.com).
+x = 10, y = 6, rule = B36/S23
+b3o$o$o$o8bo$9bo$9bo!

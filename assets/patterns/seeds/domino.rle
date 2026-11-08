@@ -1,0 +1,4 @@
+#N Domino
+#C Two adjacent cells: grows into a small symmetric cluster and settles (32 cells).
+x = 2, y = 1, rule = B2/S
+2o!

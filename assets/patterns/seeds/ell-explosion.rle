@@ -1,0 +1,4 @@
+#N L-tromino
+#C Three cells, same kind of explosion as the block but asymmetric.
+x = 2, y = 2, rule = B2/S
+2o$o!

@@ -1,0 +1,4 @@
+#N HighLife replicator
+#C The famous 12-cell HighLife replicator. From LifeWiki (conwaylife.com).
+x = 5, y = 5, rule = B36/S23
+2b3o$bo2bo$o3bo$o2bo$3o!

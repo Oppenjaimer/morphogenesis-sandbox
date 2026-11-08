@@ -1,0 +1,4 @@
+#N T-tetromino
+#C Four cells, grows into a large symmetric blob.
+x = 3, y = 2, rule = B3/S012345678
+3o$bo!

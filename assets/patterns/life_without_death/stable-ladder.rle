@@ -1,0 +1,4 @@
+#N Nine-cell seed
+#C Grows into a stable 109-cell shape and stops.
+x = 5, y = 2, rule = B3/S012345678
+2ob2o$5o!

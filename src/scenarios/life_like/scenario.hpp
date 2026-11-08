@@ -4,6 +4,7 @@
 #include "grid/grid.hpp"
 #include "grid/grid_renderer.hpp"
 #include "scenarios/life_like/pattern_library.hpp"
+#include "scenarios/life_like/rle.hpp"
 #include "scenarios/life_like/rule.hpp"
 
 #include <cstdint>
@@ -31,6 +32,8 @@ private:
     void clear_grid();
     void draw_toggle_row(const char* label, uint16_t& mask);
     void draw_pattern_overlay();
+    void draw_pattern_folder(const PatternFolder& folder);
+    void draw_pattern_entry(const PatternEntry& entry);
 
     void placement_mode(size_t gx, size_t gy);
     void painting_mode(size_t gx, size_t gy);
@@ -49,4 +52,5 @@ private:
     PatternLibrary m_pattern_library;
     std::optional<Pattern> m_active_pattern;
     bool m_pattern_lock = false;
+    int m_pattern_popup_generation = 0; // Bumped on every open so tree nodes start fresh
 };

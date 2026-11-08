@@ -1,10 +1,12 @@
 #include "scenarios/life_like/scenario.hpp"
+#include "scenarios/life_like/pattern_library.hpp"
 #include "scenarios/life_like/rule.hpp"
 #include "ui/theme.hpp"
 
 #include <imgui.h>
 #include <raylib.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <filesystem>
 #include <random>
@@ -13,6 +15,18 @@
 namespace {
     const std::filesystem::path patterns_dir = std::filesystem::path(ASSETS_DIR) / "patterns";
     const std::filesystem::path presets_file = std::filesystem::path(ASSETS_DIR) / "presets.txt";
+
+    bool folder_has_rule(const PatternFolder& folder, const Rule& rule) {
+        const auto matches = [&](const PatternEntry& entry) {
+            return entry.pattern && !entry.pattern->rule.empty() &&
+                   Rule::from_golly(entry.pattern->rule) == rule;
+        };
+
+        return std::ranges::any_of(folder.entries, matches) ||
+               std::ranges::any_of(folder.folders, [&](const PatternFolder& sub) {
+                   return folder_has_rule(sub, rule);
+               });
+    }
 }
 
 LifeLikeScenario::LifeLikeScenario(const LifeLikeConfig& config)
@@ -101,6 +115,7 @@ void LifeLikeScenario::draw_ui() {
     // Pattern trigger button
     if (ImGui::Button("Place Pattern")) {
         m_pattern_library.fetch(patterns_dir);
+        ++m_pattern_popup_generation;
         ImGui::OpenPopup("pattern_popup");
     }
 
@@ -133,52 +148,14 @@ void LifeLikeScenario::draw_ui() {
     if (ImGui::BeginPopup("pattern_popup")) {
         if (!m_pattern_library.error().empty()) {
             ImGui::TextDisabled("%s", m_pattern_library.error().c_str());
-        } else if (m_pattern_library.entries().empty()) {
+        } else if (m_pattern_library.empty()) {
             ImGui::TextDisabled("No RLE files found in %s", patterns_dir.c_str());
         } else {
-            for (const auto& entry : m_pattern_library.entries()) {
-                if (!entry.error.empty()) {
-                    ImGui::TextDisabled("%s (error)", entry.filename.c_str());
-                    if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", entry.error.c_str());
-                } else {
-                    // Check rules mismatch
-                    bool rule_mismatch = false;
-                    if (entry.pattern.has_value() && !entry.pattern->rule.empty()) {
-                        Rule pattern_rule = Rule::from_golly(entry.pattern->rule);
-                        if (pattern_rule != m_rule) rule_mismatch = true;
-                    }
-
-                    if (rule_mismatch)
-                        ImGui::PushStyleColor(ImGuiCol_Text, theme::to_imvec(theme::bright_yellow));
-
-                    if (ImGui::Selectable(entry.filename.c_str()))
-                        m_active_pattern = entry.pattern;
-
-                    if (rule_mismatch) ImGui::PopStyleColor();
-
-                    if (ImGui::IsItemHovered() && entry.pattern.has_value()) {
-                        ImGui::BeginTooltip();
-
-                        if (!entry.pattern->name.empty())
-                            ImGui::Text("%s", entry.pattern->name.c_str());
-
-                        if (rule_mismatch) {
-                            if (!entry.pattern->name.empty()) ImGui::Separator();
-                            ImGui::TextColored(
-                                theme::to_imvec(theme::bright_yellow),
-                                "Pattern uses rule %s", entry.pattern->rule.c_str()
-                            );
-                        }
-
-                        if (!entry.pattern->description.empty()) {
-                            if (!entry.pattern->name.empty()) ImGui::Separator();
-                            ImGui::TextDisabled("%s", entry.pattern->description.c_str());
-                        }
-
-                        ImGui::EndTooltip();
-                    }
-                }
-            }
+            // Tree node open/closed state is remembered per ID, so pushing a new ID
+            // lets the "open if it has patterns for this rule" default apply again
+            ImGui::PushID(m_pattern_popup_generation);
+            draw_pattern_folder(m_pattern_library.root());
+            ImGui::PopID();
         }
 
         ImGui::EndPopup();
@@ -257,6 +234,66 @@ void LifeLikeScenario::draw_pattern_overlay() {
                 }
             }
         }
+    }
+}
+
+void LifeLikeScenario::draw_pattern_folder(const PatternFolder& folder) {
+    for (const auto& sub : folder.folders) {
+        const ImGuiTreeNodeFlags flags = folder_has_rule(sub, m_rule)
+                                         ? ImGuiTreeNodeFlags_DefaultOpen
+                                         : ImGuiTreeNodeFlags_None;
+
+        if (ImGui::TreeNodeEx(sub.name.c_str(), flags)) {
+            draw_pattern_folder(sub);
+            ImGui::TreePop();
+        }
+    }
+
+    for (const auto& entry : folder.entries) draw_pattern_entry(entry);
+}
+
+void LifeLikeScenario::draw_pattern_entry(const PatternEntry& entry) {
+    if (!entry.error.empty()) {
+        ImGui::TextDisabled("%s (error)", entry.filename.c_str());
+        if (ImGui::IsItemHovered()) ImGui::SetTooltip("%s", entry.error.c_str());
+        return;
+    }
+
+    // Check rules mismatch
+    bool rule_mismatch = false;
+    if (entry.pattern.has_value() && !entry.pattern->rule.empty()) {
+        Rule pattern_rule = Rule::from_golly(entry.pattern->rule);
+        if (pattern_rule != m_rule) rule_mismatch = true;
+    }
+
+    if (rule_mismatch)
+        ImGui::PushStyleColor(ImGuiCol_Text, theme::to_imvec(theme::bright_yellow));
+
+    if (ImGui::Selectable(entry.filename.c_str()))
+        m_active_pattern = entry.pattern;
+
+    if (rule_mismatch) ImGui::PopStyleColor();
+
+    if (ImGui::IsItemHovered() && entry.pattern.has_value()) {
+        ImGui::BeginTooltip();
+
+        if (!entry.pattern->name.empty())
+            ImGui::Text("%s", entry.pattern->name.c_str());
+
+        if (rule_mismatch) {
+            if (!entry.pattern->name.empty()) ImGui::Separator();
+            ImGui::TextColored(
+                theme::to_imvec(theme::bright_yellow),
+                "Pattern uses rule %s", entry.pattern->rule.c_str()
+            );
+        }
+
+        if (!entry.pattern->description.empty()) {
+            if (!entry.pattern->name.empty()) ImGui::Separator();
+            ImGui::TextDisabled("%s", entry.pattern->description.c_str());
+        }
+
+        ImGui::EndTooltip();
     }
 }
 

@@ -1,0 +1,4 @@
+#N R-pentomino
+#C In Life without Death nothing dies, so it grows into a huge blob.
+x = 3, y = 3, rule = B3/S012345678
+b2o$2o$bo!

@@ -1,0 +1,4 @@
+#N Bomber
+#C A clean diagonal spaceship: moves 8 cells every 48 generations (c/6). From LifeWiki (conwaylife.com).
+x = 9, y = 14, rule = B36/S23
+bo$bo$bo$2$3bo$2b2o$bobo$3o$$6b3o$5bobo$5b2o$5bo!

@@ -1,0 +1,4 @@
+#N Life glider as a Seeds seed
+#C Not a glider in Seeds: it explodes.
+x = 3, y = 3, rule = B2/S
+bo$2bo$3o!
