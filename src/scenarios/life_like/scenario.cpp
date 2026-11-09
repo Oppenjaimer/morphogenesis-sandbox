@@ -1,4 +1,5 @@
 #include "scenarios/life_like/scenario.hpp"
+#include "grid/grid.hpp"
 #include "scenarios/life_like/pattern_library.hpp"
 #include "scenarios/life_like/rule.hpp"
 #include "ui/theme.hpp"
@@ -26,6 +27,29 @@ namespace {
                std::ranges::any_of(folder.folders, [&](const PatternFolder& sub) {
                    return folder_has_rule(sub, rule);
                });
+    }
+
+    bool touches_edge(const Grid<uint8_t>& grid) {
+        if (grid.empty()) return false;
+
+        const size_t last_x = grid.width() - 1;
+        const size_t last_y = grid.height() - 1;
+
+        for (size_t x = 0; x <= last_x; ++x)
+            if (grid(x, 0) || grid(x, last_y)) return true;
+
+        for (size_t y = 0; y <= last_y; ++y)
+            if (grid(0, y) || grid(last_x, y)) return true;
+
+        return false;
+    }
+
+    size_t growth_pad(size_t size, int max_size) {
+        const size_t cap = static_cast<size_t>(std::max(0, max_size));
+        if (cap <= size) return 0;
+
+        const size_t room = (cap - size) / 2;
+        return std::min(std::max<size_t>(size / 2, 1), room);
     }
 }
 
@@ -65,6 +89,8 @@ void LifeLikeScenario::handle_input() {
 }
 
 void LifeLikeScenario::tick() {
+    if (m_unbounded && touches_edge(m_front_grid)) grow_grid();
+
     for (size_t y = 0; y < m_front_grid.height(); ++y) {
         for (size_t x = 0; x < m_front_grid.width(); ++x) {
             int alive_neighbors = 0;
@@ -101,6 +127,19 @@ void LifeLikeScenario::draw_ui() {
     if (ImGui::Button("Randomize [R]")) randomize_grid();
     ImGui::SameLine();
     if (ImGui::Button("Clear [C]")) clear_grid();
+
+    // Unbounded checkbox
+    ImGui::AlignTextToFramePadding();
+    ImGui::Text("Unbounded"); ImGui::SameLine();
+    ImGui::BeginDisabled(!can_expand());
+    ImGui::Checkbox("##unbounded", &m_unbounded);
+    ImGui::EndDisabled();
+
+    if (!can_expand() && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+        ImGui::SetTooltip("Maximum grid size reached");
+
+    ImGui::SameLine();
+    ImGui::TextDisabled("%zux%zu", m_front_grid.width(), m_front_grid.height());
 
     ImGui::SeparatorText("Rules & Patterns");
 
@@ -181,9 +220,26 @@ void LifeLikeScenario::randomize_grid() {
 }
 
 void LifeLikeScenario::clear_grid() {
-    m_front_grid.fill(0);
-    m_back_grid.fill(0);
+    m_front_grid.resize(m_config.grid_width, m_config.grid_height);
+    m_back_grid.resize(m_config.grid_width, m_config.grid_height);
     m_dirty = true;
+}
+
+void LifeLikeScenario::grow_grid() {
+    const size_t pad_x = growth_pad(m_front_grid.width(), m_config.max_grid_width);
+    const size_t pad_y = growth_pad(m_front_grid.height(), m_config.max_grid_height);
+    if (pad_x == 0 && pad_y == 0) return;
+
+    m_front_grid.pad(pad_x, pad_y);
+    m_back_grid.resize(m_front_grid.width(), m_front_grid.height()); // Overwritten by tick
+    m_dirty = true;
+
+    if (!can_expand()) m_unbounded = false;
+}
+
+bool LifeLikeScenario::can_expand() const {
+    return growth_pad(m_front_grid.width(), m_config.max_grid_width) > 0 ||
+           growth_pad(m_front_grid.height(), m_config.max_grid_height) > 0;
 }
 
 void LifeLikeScenario::draw_toggle_row(const char* label, uint16_t& mask) {

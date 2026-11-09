@@ -22,6 +22,22 @@ public:
         m_data.assign(width * height, default_value);
     }
 
+    // Add padding rows and columns around the grid
+    void pad(size_t pad_x, size_t pad_y, const T& fill = T{}) {
+        const size_t new_width = m_width + 2 * pad_x;
+        const size_t new_height = m_height + 2 * pad_y;
+
+        std::vector<T> data(new_width * new_height, fill);
+        for (size_t y = 0; y < m_height; ++y) {
+            std::copy_n(m_data.data() + y * m_width, m_width,
+                        data.data() + (y + pad_y) * new_width + pad_x);
+        }
+
+        m_data = std::move(data);
+        m_width = new_width;
+        m_height = new_height;
+    }
+
     size_t index(size_t x, size_t y) const {
         assert(in_bounds(x, y) && "Grid coordinates out of bounds");
         return y * m_width + x;

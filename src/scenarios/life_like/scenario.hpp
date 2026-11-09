@@ -15,7 +15,13 @@
 struct LifeLikeConfig {
     int grid_width = 320;
     int grid_height = 180;
-    float random_alive_rate = 0.2f; // 20% chance for a cell to be alive when randomizing grid
+
+    // Unbounded grid cap (guess it's not really unbounded lol)
+    int max_grid_width = grid_width * 4;
+    int max_grid_height = grid_height * 4;
+
+    // 20% chance for a cell to be alive when randomizing grid
+    float random_alive_rate = 0.2f;
 };
 
 class LifeLikeScenario final : public Scenario {
@@ -30,6 +36,10 @@ public:
 private:
     void randomize_grid();
     void clear_grid();
+    void grow_grid();
+
+    bool can_expand() const;
+
     void draw_toggle_row(const char* label, uint16_t& mask);
     void draw_pattern_overlay();
     void draw_pattern_folder(const PatternFolder& folder);
@@ -48,6 +58,7 @@ private:
 
     std::mt19937 m_rng;
     bool m_dirty = true; // Flag for grid GPU upload when modified only
+    bool m_unbounded = false;
 
     PatternLibrary m_pattern_library;
     std::optional<Pattern> m_active_pattern;
